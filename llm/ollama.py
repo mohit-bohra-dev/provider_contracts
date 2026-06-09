@@ -85,7 +85,7 @@ class OllamaProvider(AbstractLLMProvider):
             "model": self._model,
             "messages": self._to_ollama_messages(messages),
             "stream": False,
-            "options": {"temperature": temperature, "num_predict": max_tokens},
+            "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 8192},
         }
         if json_mode:
             payload["format"] = "json"
@@ -137,7 +137,7 @@ class OllamaProvider(AbstractLLMProvider):
                     "model": self._model,
                     "messages": self._to_ollama_messages(messages),
                     "stream": True,
-                    "options": {"temperature": temperature, "num_predict": max_tokens},
+                    "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 8192},
                 },
             ) as response,
         ):

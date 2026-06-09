@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 
 class ToolDefinition(BaseModel):
-    """Provider-agnostic tool definition exposed to the model."""
+    """Provider-agnostic tool schema for native tool calling."""
 
     name: str
     description: str
@@ -15,7 +15,7 @@ class ToolDefinition(BaseModel):
 
 
 class ToolCallRequest(BaseModel):
-    """A tool call requested by the model."""
+    """A tool call the model wants to make."""
 
     name: str
     arguments: dict[str, Any] = Field(default_factory=dict)

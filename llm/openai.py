@@ -25,8 +25,9 @@ class OpenAIProvider(AbstractLLMProvider):
         api_key: str,
         model: str = _DEFAULT_MODEL,
         embed_model: str = _DEFAULT_EMBED_MODEL,
+        base_url: str | None = None,
     ) -> None:
-        self._client = AsyncOpenAI(api_key=api_key)
+        self._client = AsyncOpenAI(api_key=api_key, base_url=base_url)
         self._model = model
         self._embed_model = embed_model
 
@@ -90,7 +91,7 @@ class OpenAIProvider(AbstractLLMProvider):
             model=self._model,
             messages=msgs,
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_tokens,
         )
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
@@ -119,7 +120,7 @@ class OpenAIProvider(AbstractLLMProvider):
             model=self._model,
             messages=self._to_openai_messages(messages),
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_tokens,
         )
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
@@ -158,7 +159,7 @@ class OpenAIProvider(AbstractLLMProvider):
             model=self._model,
             messages=self._to_openai_messages(messages),
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_tokens,
             stream=True,
         )
         async for chunk in stream:
