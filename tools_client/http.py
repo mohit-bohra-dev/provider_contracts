@@ -41,7 +41,11 @@ class HttpToolsClientProvider(AbstractToolsClientProvider):
                     json=tool.parameters,
                 )
                 response.raise_for_status()
-                data: dict[str, Any] = response.json()
+                raw: Any = response.json()
+                # ToolResult.data expects dict; wrap list responses
+                data: dict[str, Any] = (
+                    raw if isinstance(raw, dict) else {"results": raw}
+                )
                 return ToolResult(
                     tool_name=tool.tool_name,
                     success=True,

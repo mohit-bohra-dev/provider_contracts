@@ -11,6 +11,10 @@ from azure.search.documents.indexes.models import (
     SearchField,
     SearchFieldDataType,
     SearchIndex,
+    SemanticConfiguration,
+    SemanticField,
+    SemanticPrioritizedFields,
+    SemanticSearch,
     VectorSearch,
     VectorSearchAlgorithmKind,
     VectorSearchProfile,
@@ -18,7 +22,6 @@ from azure.search.documents.indexes.models import (
 from azure.search.documents.models import VectorizedQuery
 
 from ._base import AbstractVectorStoreProvider, SearchResult, VectorDocument
-
 
 _DEFAULT_ENDPOINT = "https://YOUR-SEARCH-SERVICE.search.windows.net"
 _DEFAULT_INDEX = "default"
@@ -75,7 +78,7 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
             self._create_index()
 
     def _create_index(self) -> None:
-        """Create the search index with vector support."""
+        """Create the search index with vector and semantic support."""
         # Define fields
         fields = [
             SearchField(
@@ -123,12 +126,24 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
                 )
             ],
         )
+        
+        # Add semantic configuration
+        semantic_config = SemanticConfiguration(
+            name="policy-semantic-config",
+            prioritized_fields=SemanticPrioritizedFields(
+                content_fields=[SemanticField(field_name="content")]
+            )
+        )
+        
+        # Create semantic search configuration
+        semantic_search = SemanticSearch(configurations=[semantic_config])
 
-        # Create the index
+        # Create the index with semantic search
         index = SearchIndex(
             name=self._index_name,
             fields=fields,
             vector_search=vector_search,
+            semantic_search=semantic_search,
         )
         
         self._index_client.create_index(index)
@@ -168,19 +183,14 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
     async def search(
         self,
         embedding: list[float],
+        query_text: str | None = None,
         *,
         namespace: str = "default",
         top_k: int = 5,
         min_score: float = 0.0,
         filter: dict[str, Any] | None = None,
     ) -> list[SearchResult]:
-        """Search for similar documents using vector similarity."""
-        # Create vector query
-        vector_query = VectorizedQuery(
-            vector=embedding,
-            k_nearest_neighbors=top_k,
-            fields="embedding",
-        )
+        """Search for similar documents using hybrid search and semantic re-ranking."""
         
         # Build filter string if provided
         filter_str = None
@@ -193,14 +203,40 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
                     filter_parts.append(f"{key} eq {value}")
             filter_str = " and ".join(filter_parts)
         
-        # Perform search
-        results = self._search_client.search(
-            search_text=None,
-            vector_queries=[vector_query],
-            filter=filter_str,
-            select=["id", "content", "metadata"],
-            top=top_k,
-        )
+        # Use hybrid search when query text is available
+        if query_text:
+            # Create both text and vector query for hybrid search
+            vector_query = VectorizedQuery(
+                vector=embedding,
+                k_nearest_neighbors=top_k,
+                fields="embedding",
+            )
+            
+            # Perform hybrid search with semantic re-ranking
+            results = self._search_client.search(
+                search_text=query_text,
+                vector_queries=[vector_query],
+                filter=filter_str,
+                select=["id", "content", "metadata"],
+                top=top_k,
+                query_type="semantic",  # Enable semantic re-ranking
+                semantic_configuration_name="policy-semantic-config",
+            )
+        else:
+            # Fall back to vector-only search
+            vector_query = VectorizedQuery(
+                vector=embedding,
+                k_nearest_neighbors=top_k,
+                fields="embedding",
+            )
+            
+            results = self._search_client.search(
+                search_text=None,
+                vector_queries=[vector_query],
+                filter=filter_str,
+                select=["id", "content", "metadata"],
+                top=top_k,
+            )
         
         # Convert to SearchResult objects
         search_results = []

@@ -1,0 +1,402 @@
+{
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\_version.py": {
+    "mtime": 1779538791.1912024,
+    "ast_hash": "4d3429888dc1ddefa4a96a5967a80e44",
+    "semantic_hash": "4d3429888dc1ddefa4a96a5967a80e44"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\__init__.py": {
+    "mtime": 1779540774.1879165,
+    "ast_hash": "e6817c35cab230d242d7a4287ccbbd85",
+    "semantic_hash": "e6817c35cab230d242d7a4287ccbbd85"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\audit_sink\\jsonl.py": {
+    "mtime": 1779542970.7113822,
+    "ast_hash": "0fba6473ba0bebc0c93f6a8daed329cc",
+    "semantic_hash": "0fba6473ba0bebc0c93f6a8daed329cc"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\audit_sink\\mock.py": {
+    "mtime": 1779542968.694705,
+    "ast_hash": "45eb7c4106c9c2176c5d9c35d8730e06",
+    "semantic_hash": "45eb7c4106c9c2176c5d9c35d8730e06"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\audit_sink\\_base.py": {
+    "mtime": 1779540248.0130272,
+    "ast_hash": "c707c531198bdcd3510c0181ee9d4d03",
+    "semantic_hash": "c707c531198bdcd3510c0181ee9d4d03"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\audit_sink\\__init__.py": {
+    "mtime": 1779540327.7416492,
+    "ast_hash": "efb4d7bbc6cb7cea542fef6fa7b766ef",
+    "semantic_hash": "efb4d7bbc6cb7cea542fef6fa7b766ef"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\cache\\memory.py": {
+    "mtime": 1779539086.1435149,
+    "ast_hash": "d22a6c7dbc8bf295ec39c055b253ad1f",
+    "semantic_hash": "d22a6c7dbc8bf295ec39c055b253ad1f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\cache\\redis.py": {
+    "mtime": 1779541115.2535963,
+    "ast_hash": "15d51b0fe52e6d2f8dddc1044724f205",
+    "semantic_hash": "15d51b0fe52e6d2f8dddc1044724f205"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\cache\\_base.py": {
+    "mtime": 1779539082.5962248,
+    "ast_hash": "1ee32b3463fdb280e7c10c60f7ac2852",
+    "semantic_hash": "1ee32b3463fdb280e7c10c60f7ac2852"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\cache\\__init__.py": {
+    "mtime": 1779539100.2960804,
+    "ast_hash": "43ccff07a8a3a92c5c5b5d401d8d33c2",
+    "semantic_hash": "43ccff07a8a3a92c5c5b5d401d8d33c2"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\content_safety\\mock.py": {
+    "mtime": 1779542958.1598608,
+    "ast_hash": "a78862dc06656d3952e84a2585e872fe",
+    "semantic_hash": "a78862dc06656d3952e84a2585e872fe"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\content_safety\\rule_based.py": {
+    "mtime": 1779952864.2598903,
+    "ast_hash": "ec7a4d9585e28836526af07f30e9746b",
+    "semantic_hash": "ec7a4d9585e28836526af07f30e9746b"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\content_safety\\_base.py": {
+    "mtime": 1779540802.2569232,
+    "ast_hash": "07781ead57e2757024a84b7d8a187b20",
+    "semantic_hash": "07781ead57e2757024a84b7d8a187b20"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\content_safety\\__init__.py": {
+    "mtime": 1779540339.3250194,
+    "ast_hash": "a05645381b85c07a2c4b85d9f38b1667",
+    "semantic_hash": "a05645381b85c07a2c4b85d9f38b1667"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\email\\mock.py": {
+    "mtime": 1779539226.2779632,
+    "ast_hash": "b4a81ad31ef7e3634d1b2a66f7ce5a4f",
+    "semantic_hash": "b4a81ad31ef7e3634d1b2a66f7ce5a4f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\email\\_base.py": {
+    "mtime": 1779539222.3517187,
+    "ast_hash": "e19daa0f167411f6697371b01f2e73c9",
+    "semantic_hash": "e19daa0f167411f6697371b01f2e73c9"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\email\\__init__.py": {
+    "mtime": 1779539230.6327488,
+    "ast_hash": "1a61a530e57e14fbc4243776c9099cba",
+    "semantic_hash": "1a61a530e57e14fbc4243776c9099cba"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\embedding\\azure_openai.py": {
+    "mtime": 1780207604.091534,
+    "ast_hash": "5eaae6365498027f69d723cbbc530618",
+    "semantic_hash": "5eaae6365498027f69d723cbbc530618"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\embedding\\mock.py": {
+    "mtime": 1780648895.0397222,
+    "ast_hash": "381c48f7aa4ce75e9ab36ff3dccabb9a",
+    "semantic_hash": "381c48f7aa4ce75e9ab36ff3dccabb9a"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\embedding\\openai.py": {
+    "mtime": 1780207604.0905125,
+    "ast_hash": "dcdb772a98e159b125a2dc6b82d7d7ff",
+    "semantic_hash": "dcdb772a98e159b125a2dc6b82d7d7ff"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\embedding\\sentence_transformers.py": {
+    "mtime": 1780207604.091534,
+    "ast_hash": "2c98a27e2a28eede85fc51965d5a45b4",
+    "semantic_hash": "2c98a27e2a28eede85fc51965d5a45b4"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\embedding\\_base.py": {
+    "mtime": 1780207604.0822723,
+    "ast_hash": "df8bf7ebc9207304e08d6afbff29d9a2",
+    "semantic_hash": "df8bf7ebc9207304e08d6afbff29d9a2"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\embedding\\__init__.py": {
+    "mtime": 1779540323.9119227,
+    "ast_hash": "8919a1fbfd0b2e260c766529c48fe119",
+    "semantic_hash": "8919a1fbfd0b2e260c766529c48fe119"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\anthropic.py": {
+    "mtime": 1780908432.0616777,
+    "ast_hash": "5d2e06ba69b428a18bf83006b5d06cce",
+    "semantic_hash": "5d2e06ba69b428a18bf83006b5d06cce"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\azure_openai.py": {
+    "mtime": 1780908398.2823288,
+    "ast_hash": "d6d95adc9f211bfef9eb9a40dbaf072f",
+    "semantic_hash": "d6d95adc9f211bfef9eb9a40dbaf072f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\gemini.py": {
+    "mtime": 1780908448.3709087,
+    "ast_hash": "8f5d8444ce7840254913dd0458cb08cc",
+    "semantic_hash": "8f5d8444ce7840254913dd0458cb08cc"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\mock.py": {
+    "mtime": 1780908458.0505812,
+    "ast_hash": "d4e606d7d489a6391ce11aab6662674b",
+    "semantic_hash": "d4e606d7d489a6391ce11aab6662674b"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\ollama.py": {
+    "mtime": 1780936502.9381547,
+    "ast_hash": "49137652c875e0372066901f626f90b2",
+    "semantic_hash": "49137652c875e0372066901f626f90b2"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\openai.py": {
+    "mtime": 1780944530.1868565,
+    "ast_hash": "52174f1be44bcc794a10c57d8234ce0f",
+    "semantic_hash": "52174f1be44bcc794a10c57d8234ce0f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\_base.py": {
+    "mtime": 1780908957.4000955,
+    "ast_hash": "7e5ef343df4fc882a61616d6ff0c4119",
+    "semantic_hash": "7e5ef343df4fc882a61616d6ff0c4119"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\llm\\__init__.py": {
+    "mtime": 1780907706.9482594,
+    "ast_hash": "de2453bf338c19f27673c1e3f060d33f",
+    "semantic_hash": "de2453bf338c19f27673c1e3f060d33f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\pii\\mock.py": {
+    "mtime": 1779542939.198452,
+    "ast_hash": "7fece71b7291ef25693bb65d249f5130",
+    "semantic_hash": "7fece71b7291ef25693bb65d249f5130"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\pii\\presidio.py": {
+    "mtime": 1779542941.2228606,
+    "ast_hash": "374c7bf889eb88e78b6fc01c95b3da18",
+    "semantic_hash": "374c7bf889eb88e78b6fc01c95b3da18"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\pii\\_base.py": {
+    "mtime": 1779540258.7461205,
+    "ast_hash": "6b4d6a206eb44189211803e7406c6530",
+    "semantic_hash": "6b4d6a206eb44189211803e7406c6530"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\pii\\__init__.py": {
+    "mtime": 1779540343.48867,
+    "ast_hash": "938666de9fbe4f44bbab5960dcfbd82e",
+    "semantic_hash": "938666de9fbe4f44bbab5960dcfbd82e"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\prompt_store\\file.py": {
+    "mtime": 1779543036.4470055,
+    "ast_hash": "b83104c4de526e2e21b43a1c789e109f",
+    "semantic_hash": "b83104c4de526e2e21b43a1c789e109f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\prompt_store\\mock.py": {
+    "mtime": 1779543034.4358368,
+    "ast_hash": "b7574d31dab5dc6f2a0f7dc670dec8ae",
+    "semantic_hash": "b7574d31dab5dc6f2a0f7dc670dec8ae"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\prompt_store\\_base.py": {
+    "mtime": 1779540266.7088246,
+    "ast_hash": "aa4dd2a310f850b0cbdf7f25d1fc65c1",
+    "semantic_hash": "aa4dd2a310f850b0cbdf7f25d1fc65c1"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\prompt_store\\__init__.py": {
+    "mtime": 1779540352.6520405,
+    "ast_hash": "2141fc8cdf518c717582ebb336c532b8",
+    "semantic_hash": "2141fc8cdf518c717582ebb336c532b8"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\queue\\celery_redis.py": {
+    "mtime": 1779541388.6724515,
+    "ast_hash": "082f6980c6e772067dec16f0c9714517",
+    "semantic_hash": "082f6980c6e772067dec16f0c9714517"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\queue\\in_process.py": {
+    "mtime": 1779540180.4227078,
+    "ast_hash": "de16a45f0dd3c569467cf5f0250cc28f",
+    "semantic_hash": "de16a45f0dd3c569467cf5f0250cc28f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\queue\\_base.py": {
+    "mtime": 1779539657.643968,
+    "ast_hash": "8fdce542c8775ab4c9d49d99dbe87a98",
+    "semantic_hash": "8fdce542c8775ab4c9d49d99dbe87a98"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\queue\\__init__.py": {
+    "mtime": 1779540218.7252684,
+    "ast_hash": "645d36dbbd4bb2618efafeca8dab3487",
+    "semantic_hash": "645d36dbbd4bb2618efafeca8dab3487"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\session_store\\memory.py": {
+    "mtime": 1781071784.629388,
+    "ast_hash": "7dcb2631c549aeb126e9dfde10fc16f2",
+    "semantic_hash": "7dcb2631c549aeb126e9dfde10fc16f2"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\session_store\\mock.py": {
+    "mtime": 1781071784.623398,
+    "ast_hash": "94a762775ffbc4b6057d374d580a9b80",
+    "semantic_hash": "94a762775ffbc4b6057d374d580a9b80"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\session_store\\__init__.py": {
+    "mtime": 1781071580.067172,
+    "ast_hash": "f695b9e2ca445231a04053d37504a7b4",
+    "semantic_hash": "f695b9e2ca445231a04053d37504a7b4"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\session_store\\tests\\test_contract.py": {
+    "mtime": 1781072019.8682764,
+    "ast_hash": "38c6a6f95328764a1970f98284c7599c",
+    "semantic_hash": "38c6a6f95328764a1970f98284c7599c"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\storage\\local.py": {
+    "mtime": 1779539273.1215916,
+    "ast_hash": "572235fe5b82581780638733bdb905a6",
+    "semantic_hash": "572235fe5b82581780638733bdb905a6"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\storage\\mock.py": {
+    "mtime": 1779539260.431717,
+    "ast_hash": "6b6e7ba1ce1dacae4058f5f107a61d2a",
+    "semantic_hash": "6b6e7ba1ce1dacae4058f5f107a61d2a"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\storage\\r2.py": {
+    "mtime": 1779539277.878501,
+    "ast_hash": "f4bf64c8279f6cc2c7122514d0bc1cd8",
+    "semantic_hash": "f4bf64c8279f6cc2c7122514d0bc1cd8"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\storage\\_base.py": {
+    "mtime": 1779539255.3254452,
+    "ast_hash": "19948f6099f525ffd00ca73fadeee213",
+    "semantic_hash": "19948f6099f525ffd00ca73fadeee213"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\storage\\__init__.py": {
+    "mtime": 1779539282.5680182,
+    "ast_hash": "a0b5e23e595b579c6a47627e6980ca77",
+    "semantic_hash": "a0b5e23e595b579c6a47627e6980ca77"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\stt\\mock.py": {
+    "mtime": 1779539326.622858,
+    "ast_hash": "2235f590a20e7e556a34bafe417ce8e8",
+    "semantic_hash": "2235f590a20e7e556a34bafe417ce8e8"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\stt\\whisper_api.py": {
+    "mtime": 1779539329.9221292,
+    "ast_hash": "c438d6ce4f40d8ba685396aca45519b2",
+    "semantic_hash": "c438d6ce4f40d8ba685396aca45519b2"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\stt\\whisper_local.py": {
+    "mtime": 1779541340.6509285,
+    "ast_hash": "09b8a04a533c9119c946586836e5c4c8",
+    "semantic_hash": "09b8a04a533c9119c946586836e5c4c8"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\stt\\_base.py": {
+    "mtime": 1779539322.7743917,
+    "ast_hash": "bd97f6bac11a0c12263b127634800318",
+    "semantic_hash": "bd97f6bac11a0c12263b127634800318"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\stt\\__init__.py": {
+    "mtime": 1779539335.0198123,
+    "ast_hash": "ae6985214db58b9f5f64d39180ecab93",
+    "semantic_hash": "ae6985214db58b9f5f64d39180ecab93"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\telemetry\\console.py": {
+    "mtime": 1779543000.381006,
+    "ast_hash": "68bf6f7dbfcaea6586ac11ec6cce2b99",
+    "semantic_hash": "68bf6f7dbfcaea6586ac11ec6cce2b99"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\telemetry\\mock.py": {
+    "mtime": 1779542999.567226,
+    "ast_hash": "30204beeefe1b1f74dfc5bf787b07166",
+    "semantic_hash": "30204beeefe1b1f74dfc5bf787b07166"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\telemetry\\_base.py": {
+    "mtime": 1779541223.9114497,
+    "ast_hash": "c839f195be1c2113d1987fa8765e5f56",
+    "semantic_hash": "c839f195be1c2113d1987fa8765e5f56"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\telemetry\\__init__.py": {
+    "mtime": 1779540361.2400038,
+    "ast_hash": "e1785bb5297987f8eb5a723508df37a8",
+    "semantic_hash": "e1785bb5297987f8eb5a723508df37a8"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tools_client\\http.py": {
+    "mtime": 1781343064.6058517,
+    "ast_hash": "44a58005f914af044584854b694f813f",
+    "semantic_hash": "44a58005f914af044584854b694f813f"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tools_client\\mock.py": {
+    "mtime": 1779543020.9955115,
+    "ast_hash": "afcfb7d4401dc49fa5bed61e56f4ab76",
+    "semantic_hash": "afcfb7d4401dc49fa5bed61e56f4ab76"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tools_client\\_base.py": {
+    "mtime": 1781343023.7146065,
+    "ast_hash": "b6323be5436e81097752ef570298dc8c",
+    "semantic_hash": "b6323be5436e81097752ef570298dc8c"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tools_client\\__init__.py": {
+    "mtime": 1779540365.4236157,
+    "ast_hash": "35e01d6b3f0fb1f9ca8e5a7a734fc99e",
+    "semantic_hash": "35e01d6b3f0fb1f9ca8e5a7a734fc99e"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tts\\elevenlabs.py": {
+    "mtime": 1779539687.865624,
+    "ast_hash": "b6f23c78329c45c4f2637706a76a7739",
+    "semantic_hash": "b6f23c78329c45c4f2637706a76a7739"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tts\\mock.py": {
+    "mtime": 1779539684.701368,
+    "ast_hash": "f189e96b79b1fe46050ef4eb3e30be98",
+    "semantic_hash": "f189e96b79b1fe46050ef4eb3e30be98"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tts\\_base.py": {
+    "mtime": 1779539643.9961348,
+    "ast_hash": "2bdcf33517ca385575e71541ca2f51e8",
+    "semantic_hash": "2bdcf33517ca385575e71541ca2f51e8"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\tts\\__init__.py": {
+    "mtime": 1779539689.796985,
+    "ast_hash": "b8bd04e5816403a4c3a26a762fb8eba3",
+    "semantic_hash": "b8bd04e5816403a4c3a26a762fb8eba3"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vad\\mock.py": {
+    "mtime": 1779539704.1236253,
+    "ast_hash": "15b20474dd6b0b8b5ada70f9a262ae6a",
+    "semantic_hash": "15b20474dd6b0b8b5ada70f9a262ae6a"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vad\\silero.py": {
+    "mtime": 1779539709.6724563,
+    "ast_hash": "d88d930c62f4c83d9febe806f5c10f1e",
+    "semantic_hash": "d88d930c62f4c83d9febe806f5c10f1e"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vad\\webrtc.py": {
+    "mtime": 1779539707.7464285,
+    "ast_hash": "244dd98d4a762de8ea34ce724b371e62",
+    "semantic_hash": "244dd98d4a762de8ea34ce724b371e62"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vad\\_base.py": {
+    "mtime": 1779539649.163728,
+    "ast_hash": "e1ae4b280137e3abd7501b6a33b0a6c2",
+    "semantic_hash": "e1ae4b280137e3abd7501b6a33b0a6c2"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vad\\__init__.py": {
+    "mtime": 1779539713.7981188,
+    "ast_hash": "42641deda59fb1ab25d5e0757037f405",
+    "semantic_hash": "42641deda59fb1ab25d5e0757037f405"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vector_store\\azure_ai_search.py": {
+    "mtime": 1781071784.6593025,
+    "ast_hash": "028a3bbd5a869c51c7f9c9abce1c9534",
+    "semantic_hash": "028a3bbd5a869c51c7f9c9abce1c9534"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vector_store\\mock.py": {
+    "mtime": 1780648884.9963975,
+    "ast_hash": "2a7707c5c1458086844d4f837877fea1",
+    "semantic_hash": "2a7707c5c1458086844d4f837877fea1"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vector_store\\pgvector.py": {
+    "mtime": 1779540074.696302,
+    "ast_hash": "83e9f5b9b31b96878c7c2aa380967211",
+    "semantic_hash": "83e9f5b9b31b96878c7c2aa380967211"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vector_store\\qdrant.py": {
+    "mtime": 1781071784.6593025,
+    "ast_hash": "237ada0d002faafa0d9c46543a27a70e",
+    "semantic_hash": "237ada0d002faafa0d9c46543a27a70e"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vector_store\\_base.py": {
+    "mtime": 1780207604.091534,
+    "ast_hash": "99874660adec826404e48a7905f1ea8d",
+    "semantic_hash": "99874660adec826404e48a7905f1ea8d"
+  },
+  "D:\\Programming-Projects\\provider-contracts\\provider_contracts\\vector_store\\__init__.py": {
+    "mtime": 1780207604.0895002,
+    "ast_hash": "c8e8f75d04572c52887f2510e13e6c03",
+    "semantic_hash": "c8e8f75d04572c52887f2510e13e6c03"
+  }
+}

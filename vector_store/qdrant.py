@@ -78,6 +78,7 @@ class QdrantVectorStoreProvider(AbstractVectorStoreProvider):
     async def search(
         self,
         embedding: list[float],
+        query_text: str | None = None,
         *,
         namespace: str = "default",
         top_k: int = 5,
@@ -87,7 +88,11 @@ class QdrantVectorStoreProvider(AbstractVectorStoreProvider):
         collection = self._resolve_collection(namespace)
         query_filter = None
         if filter:
-            from qdrant_client.models import Filter, FieldCondition, MatchValue  # type: ignore[import-untyped]
+            from qdrant_client.models import (  # type: ignore[import-untyped]
+                FieldCondition,
+                Filter,
+                MatchValue,
+            )
 
             conditions = [
                 FieldCondition(key=k, match=MatchValue(value=v))

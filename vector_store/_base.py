@@ -52,6 +52,7 @@ class AbstractVectorStoreProvider(ABC):
     async def search(
         self,
         embedding: list[float],
+        query_text: str | None = None,
         *,
         namespace: str = "default",
         top_k: int = 5,
@@ -63,6 +64,7 @@ class AbstractVectorStoreProvider(ABC):
 
         Args:
             embedding: Query embedding vector.
+            query_text: Optional query text for hybrid search.
             namespace: Partition to search within.
             top_k: Maximum number of results.
             min_score: Minimum cosine similarity threshold.
