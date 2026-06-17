@@ -100,9 +100,11 @@ class QdrantVectorStoreProvider(AbstractVectorStoreProvider):
             ]
             query_filter = Filter(must=conditions)
 
-        hits: Any = await self._client.search(
+        # .search() was removed in qdrant-client >= 1.14; use .query_points() instead.
+        # query_points() returns a QueryResponse whose .points is a list[ScoredPoint].
+        response: Any = await self._client.query_points(
             collection_name=collection,
-            query_vector=embedding,
+            query=embedding,
             limit=top_k,
             score_threshold=min_score if min_score > 0 else None,
             query_filter=query_filter,
@@ -114,7 +116,7 @@ class QdrantVectorStoreProvider(AbstractVectorStoreProvider):
                 metadata={k: v for k, v in hit.payload.items() if k != "text"},
                 text=hit.payload.get("text"),
             )
-            for hit in hits
+            for hit in response.points
         ]
 
     async def delete(self, ids: list[str], *, namespace: str = "default") -> None:

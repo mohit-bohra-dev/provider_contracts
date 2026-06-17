@@ -90,6 +90,7 @@ class GeminiProvider(AbstractLLMProvider):
             system_instruction=system,
             temperature=temperature,
             max_output_tokens=max_tokens,
+            # Gemini rejects json mode when tools are active
             response_mime_type="application/json" if json_mode else None,
         )
         response = await self._client.aio.models.generate_content(
@@ -123,12 +124,15 @@ class GeminiProvider(AbstractLLMProvider):
         tools: list[ToolDefinition] | None = None,
     ) -> LLMResponse:
         system, history = self._build_history(messages)
+        gemini_tools = self._to_gemini_tools(tools) if tools else None
         cfg = types.GenerateContentConfig(
             system_instruction=system,
             temperature=temperature,
             max_output_tokens=max_tokens,
-            response_mime_type="application/json" if json_mode else None,
-            tools=self._to_gemini_tools(tools) if tools else None,
+            # Gemini API rejects response_mime_type when function-calling
+            # tools are present — suppress json_mode in that case.
+            response_mime_type="application/json" if (json_mode and not gemini_tools) else None,
+            tools=gemini_tools,
         )
         response = await self._client.aio.models.generate_content(
             model=self._model_name,
