@@ -1,0 +1,38 @@
+# Ignore common build/output directories
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.git/
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large binary files
+*.zip
+*.rar
+*.tar.gz
+*.exe
+*.dll
+*.whl
+
+# IDE specific files
+.idea/
+.vscode/
+.cursor/
+
+# Graphify output (prevent self-reference)
+graphify-out/
+
+# Cache directories
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
