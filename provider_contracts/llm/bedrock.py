@@ -52,6 +52,7 @@ class BedrockProvider(AbstractLLMProvider):
         access_key_id: str | None = None,
         secret_access_key: str | None = None,
         session_token: str | None = None,
+        profile: str | None = None,
     ) -> None:
         if aioboto3 is None:
             raise ImportError(
@@ -60,7 +61,10 @@ class BedrockProvider(AbstractLLMProvider):
 
         self._model_id = model_id
         self._region = region
-        self._session = aioboto3.Session()
+        session_kwargs: dict[str, Any] = {}
+        if profile:
+            session_kwargs["profile_name"] = profile
+        self._session = aioboto3.Session(**session_kwargs)
 
         if api_key:
             # Bearer-token mode: set AWS_BEARER_TOKEN_BEDROCK — the official

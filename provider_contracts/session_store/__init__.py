@@ -1,10 +1,13 @@
 """Session store provider contracts."""
 
-from __future__ import annotations
+from provider_contracts.session_store._base import (
+    AbstractSessionStoreProvider,
+    ConversationSession,
+    ConversationTurn,
+)
 
-import typing
-
-if typing.TYPE_CHECKING:
-    from packages.common.providers.session_store import AbstractSessionStoreProvider
-
-__all__ = ["AbstractSessionStoreProvider"]
+__all__ = [
+    "AbstractSessionStoreProvider",
+    "ConversationSession",
+    "ConversationTurn",
+]

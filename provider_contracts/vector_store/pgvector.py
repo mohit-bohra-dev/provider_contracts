@@ -33,6 +33,13 @@ class PgVectorProvider(AbstractVectorStoreProvider):
         self._dimensions = dimensions
         self._initialised: set[str] = set()
 
+    async def create_collection(
+        self, name: str, vector_size: int, distance: str = "Cosine"
+    ) -> None:
+        _ = distance
+        self._dimensions = vector_size
+        await self._ensure_table(name)
+
     async def _ensure_table(self, namespace: str) -> None:
         if namespace in self._initialised:
             return
@@ -91,12 +98,15 @@ class PgVectorProvider(AbstractVectorStoreProvider):
     async def search(
         self,
         embedding: list[float],
+        query_text: str | None = None,
         *,
         namespace: str = "default",
         top_k: int = 5,
         min_score: float = 0.0,
         filter: dict[str, Any] | None = None,
     ) -> list[SearchResult]:
+        _ = query_text  # hybrid FTS can be added; vector path is primary
+        _ = filter
         await self._ensure_table(namespace)
         embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
         async with self._engine.connect() as conn:
