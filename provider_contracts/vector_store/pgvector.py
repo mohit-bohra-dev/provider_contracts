@@ -66,10 +66,14 @@ class PgVectorProvider(AbstractVectorStoreProvider):
             )
             exists = bool(exists_row.scalar())
             if exists:
+                # pgvector stores dimensions in atttypmod directly (not
+                # atttypmod-4 like varchar/bpchar). format_type is the
+                # portable check: vector(384).
                 dims_row = await conn.execute(
                     text(
                         """
-                        SELECT a.atttypmod - 4 AS dims
+                        SELECT a.atttypmod AS dims,
+                               format_type(a.atttypid, a.atttypmod) AS ft
                         FROM pg_attribute a
                         JOIN pg_class c ON a.attrelid = c.oid
                         JOIN pg_namespace n ON c.relnamespace = n.oid
@@ -81,11 +85,21 @@ class PgVectorProvider(AbstractVectorStoreProvider):
                     ),
                     {"table": table},
                 )
-                current = dims_row.scalar()
-                if current is not None and int(current) != vector_size:
+                row = dims_row.first()
+                current: int | None = None
+                if row is not None:
+                    ft = str(row.ft or "")
+                    if ft.startswith("vector(") and ft.endswith(")"):
+                        try:
+                            current = int(ft[len("vector(") : -1])
+                        except ValueError:
+                            current = None
+                    if current is None and row.dims is not None and int(row.dims) > 0:
+                        current = int(row.dims)
+                if current is not None and current != vector_size:
                     raise ProviderConfigError(
                         f"Table {table!r} exists with vector_size "
-                        f"{int(current)}, requested {vector_size}"
+                        f"{current}, requested {vector_size}"
                     )
                 self._initialised.add(namespace)
                 return
@@ -133,10 +147,10 @@ class PgVectorProvider(AbstractVectorStoreProvider):
             validate_filter_key(key)
             param = f"f{i}"
             if isinstance(value, list):
-                clauses.append(f"(metadata->'{key}') <@ (:{param})::jsonb")
+                clauses.append(f"(metadata->'{key}') <@ CAST(:{param} AS jsonb)")
                 params[param] = json.dumps(value)
             else:
-                clauses.append(f"(metadata->'{key}') = (:{param})::jsonb")
+                clauses.append(f"(metadata->'{key}') = CAST(:{param} AS jsonb)")
                 params[param] = json.dumps(value)
         return " AND " + " AND ".join(clauses), params
 
@@ -152,7 +166,12 @@ class PgVectorProvider(AbstractVectorStoreProvider):
                     text(
                         f"""
                         INSERT INTO {table} (id, embedding, metadata, text)
-                        VALUES (:id, :embedding::vector, :metadata::jsonb, :text)
+                        VALUES (
+                            :id,
+                            CAST(:embedding AS vector),
+                            CAST(:metadata AS jsonb),
+                            :text
+                        )
                         ON CONFLICT (id) DO UPDATE
                             SET embedding = EXCLUDED.embedding,
                                 metadata  = EXCLUDED.metadata,
@@ -193,11 +212,11 @@ class PgVectorProvider(AbstractVectorStoreProvider):
                 text(
                     f"""
                     SELECT id, metadata, text,
-                           1 - (embedding <=> :embedding::vector) AS score
+                           1 - (embedding <=> CAST(:embedding AS vector)) AS score
                     FROM {table}
-                    WHERE 1 - (embedding <=> :embedding::vector) >= :min_score
+                    WHERE 1 - (embedding <=> CAST(:embedding AS vector)) >= :min_score
                     {filter_sql}
-                    ORDER BY embedding <=> :embedding::vector
+                    ORDER BY embedding <=> CAST(:embedding AS vector)
                     LIMIT :top_k
                     """
                 ),
