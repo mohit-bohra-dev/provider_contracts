@@ -100,10 +100,13 @@ from .telemetry import AbstractTelemetryProvider, SpanContext
 from .tools_client import AbstractToolsClientProvider, ToolCall, ToolResult
 from .tts import AbstractTTSProvider, TTSResult
 from .vad import AbstractVADProvider, VADResult
+from .errors import ProviderConfigError, ProviderError
 from .vector_store import AbstractVectorStoreProvider, SearchResult, VectorDocument
 
 __all__ = [
     "__version__",
+    "ProviderConfigError",
+    "ProviderError",
     # LLM
     "AbstractLLMProvider",
     "LLMMessage",

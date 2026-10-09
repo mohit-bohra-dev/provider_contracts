@@ -1,6 +1,6 @@
 [project]
 name = "provider-contracts"
-version = "0.1.0"
+version = "0.2.0"
 description = "Shared abstract provider interfaces, DTOs, and reusable concrete implementations"
 readme = "README.md"
 requires-python = ">=3.11"

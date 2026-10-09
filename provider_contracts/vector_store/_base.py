@@ -1,6 +1,6 @@
 """Abstract base class for vector store providers."""
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 from pydantic import BaseModel
 
@@ -26,13 +26,34 @@ class SearchResult(BaseModel):
 
 
 class AbstractVectorStoreProvider(ABC):
-    """Contract that every vector store adapter must satisfy."""
+    """Contract that every vector store adapter must satisfy.
+
+    Filter semantics for ``search(..., filter=...)``:
+    - scalar value → equality match on that metadata key
+    - ``list`` value → any-of (document matches if its value is in the list)
+
+    Providers that implement list any-of must set
+    ``supports_any_of_filter = True`` so callers can advertise the capability.
+    """
+
+    supports_any_of_filter: ClassVar[bool] = False
 
     @abstractmethod
     async def create_collection(
         self, name: str, vector_size: int, distance: str = "Cosine"
     ) -> None:
         """Create a new collection/namespace with the specified configuration."""
+        ...
+
+    @abstractmethod
+    async def ensure_namespace(self, namespace: str, vector_size: int) -> None:
+        """Idempotently ensure the physical collection for ``namespace`` exists.
+
+        Resolves ``namespace`` to a physical collection with the **same**
+        mapping used by ``upsert`` / ``search`` / ``delete``. No-op when the
+        collection already exists with ``vector_size``. Raises
+        ``ProviderConfigError`` when it exists with a different size.
+        """
         ...
 
     @abstractmethod
@@ -68,7 +89,9 @@ class AbstractVectorStoreProvider(ABC):
             namespace: Partition to search within.
             top_k: Maximum number of results.
             min_score: Minimum cosine similarity threshold.
-            filter: Optional metadata filter (provider-specific).
+            filter: Optional metadata filter. Scalar values match with
+                equality; list values match with any-of when the provider
+                sets ``supports_any_of_filter``.
         """
         ...
 

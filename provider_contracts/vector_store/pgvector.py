@@ -1,11 +1,16 @@
 """pgvector adapter for the vector store provider using asyncpg + SQLAlchemy async."""
+from __future__ import annotations
+
 import json
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from provider_contracts.errors import ProviderConfigError
+
 from ._base import AbstractVectorStoreProvider, SearchResult, VectorDocument
+from ._filter import validate_filter_key
 
 
 class PgVectorProvider(AbstractVectorStoreProvider):
@@ -14,7 +19,7 @@ class PgVectorProvider(AbstractVectorStoreProvider):
 
     Expects a table per namespace with the schema::
 
-        CREATE TABLE <namespace> (
+        CREATE TABLE vs_<namespace> (
             id TEXT PRIMARY KEY,
             embedding vector(<dim>),
             metadata JSONB DEFAULT '{}',
@@ -28,58 +33,125 @@ class PgVectorProvider(AbstractVectorStoreProvider):
         dimensions: Embedding vector size (must match the model used).
     """
 
+    supports_any_of_filter: ClassVar[bool] = True
+
     def __init__(self, engine: AsyncEngine, *, dimensions: int = 1536) -> None:
         self._engine = engine
         self._dimensions = dimensions
         self._initialised: set[str] = set()
 
+    def _table_name(self, namespace: str) -> str:
+        return f"vs_{namespace}"
+
     async def create_collection(
         self, name: str, vector_size: int, distance: str = "Cosine"
     ) -> None:
         _ = distance
+        await self.ensure_namespace(name, vector_size)
+
+    async def ensure_namespace(self, namespace: str, vector_size: int) -> None:
+        table = self._table_name(namespace)
+        async with self._engine.connect() as conn:
+            exists_row = await conn.execute(
+                text(
+                    """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM information_schema.tables
+                        WHERE table_schema = 'public' AND table_name = :table
+                    )
+                    """
+                ),
+                {"table": table},
+            )
+            exists = bool(exists_row.scalar())
+            if exists:
+                dims_row = await conn.execute(
+                    text(
+                        """
+                        SELECT a.atttypmod - 4 AS dims
+                        FROM pg_attribute a
+                        JOIN pg_class c ON a.attrelid = c.oid
+                        JOIN pg_namespace n ON c.relnamespace = n.oid
+                        WHERE n.nspname = 'public'
+                          AND c.relname = :table
+                          AND a.attname = 'embedding'
+                          AND NOT a.attisdropped
+                        """
+                    ),
+                    {"table": table},
+                )
+                current = dims_row.scalar()
+                if current is not None and int(current) != vector_size:
+                    raise ProviderConfigError(
+                        f"Table {table!r} exists with vector_size "
+                        f"{int(current)}, requested {vector_size}"
+                    )
+                self._initialised.add(namespace)
+                return
+
         self._dimensions = vector_size
-        await self._ensure_table(name)
+        await self._ensure_table(namespace)
 
     async def _ensure_table(self, namespace: str) -> None:
         if namespace in self._initialised:
             return
+        table = self._table_name(namespace)
         async with self._engine.begin() as conn:
             await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             await conn.execute(
                 text(
                     f"""
-                    CREATE TABLE IF NOT EXISTS vs_{namespace} (
+                    CREATE TABLE IF NOT EXISTS {table} (
                         id TEXT PRIMARY KEY,
-                        embedding vector(:dim),
+                        embedding vector({self._dimensions}),
                         metadata JSONB DEFAULT '{{}}',
                         text TEXT
                     )
                     """
-                ),
-                {"dim": self._dimensions},
+                )
             )
             await conn.execute(
                 text(
                     f"""
-                    CREATE INDEX IF NOT EXISTS vs_{namespace}_embedding_idx
-                    ON vs_{namespace} USING ivfflat (embedding vector_cosine_ops)
+                    CREATE INDEX IF NOT EXISTS {table}_embedding_idx
+                    ON {table} USING ivfflat (embedding vector_cosine_ops)
                     WITH (lists = 100)
                     """
                 )
             )
         self._initialised.add(namespace)
 
+    def _filter_sql(
+        self, filter: dict[str, Any] | None
+    ) -> tuple[str, dict[str, Any]]:
+        if not filter:
+            return "", {}
+        clauses: list[str] = []
+        params: dict[str, Any] = {}
+        for i, (key, value) in enumerate(filter.items()):
+            validate_filter_key(key)
+            param = f"f{i}"
+            if isinstance(value, list):
+                clauses.append(f"(metadata->'{key}') <@ (:{param})::jsonb")
+                params[param] = json.dumps(value)
+            else:
+                clauses.append(f"(metadata->'{key}') = (:{param})::jsonb")
+                params[param] = json.dumps(value)
+        return " AND " + " AND ".join(clauses), params
+
     async def upsert(
         self, documents: list[VectorDocument], *, namespace: str = "default"
     ) -> None:
         await self._ensure_table(namespace)
+        table = self._table_name(namespace)
         async with self._engine.begin() as conn:
             for doc in documents:
                 embedding_str = "[" + ",".join(str(v) for v in doc.embedding) + "]"
                 await conn.execute(
                     text(
                         f"""
-                        INSERT INTO vs_{namespace} (id, embedding, metadata, text)
+                        INSERT INTO {table} (id, embedding, metadata, text)
                         VALUES (:id, :embedding::vector, :metadata::jsonb, :text)
                         ON CONFLICT (id) DO UPDATE
                             SET embedding = EXCLUDED.embedding,
@@ -106,22 +178,30 @@ class PgVectorProvider(AbstractVectorStoreProvider):
         filter: dict[str, Any] | None = None,
     ) -> list[SearchResult]:
         _ = query_text  # hybrid FTS can be added; vector path is primary
-        _ = filter
         await self._ensure_table(namespace)
+        table = self._table_name(namespace)
+        filter_sql, filter_params = self._filter_sql(filter)
         embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
+        params: dict[str, Any] = {
+            "embedding": embedding_str,
+            "min_score": min_score,
+            "top_k": top_k,
+            **filter_params,
+        }
         async with self._engine.connect() as conn:
             rows = await conn.execute(
                 text(
                     f"""
                     SELECT id, metadata, text,
                            1 - (embedding <=> :embedding::vector) AS score
-                    FROM vs_{namespace}
+                    FROM {table}
                     WHERE 1 - (embedding <=> :embedding::vector) >= :min_score
+                    {filter_sql}
                     ORDER BY embedding <=> :embedding::vector
                     LIMIT :top_k
                     """
                 ),
-                {"embedding": embedding_str, "min_score": min_score, "top_k": top_k},
+                params,
             )
             return [
                 SearchResult(
@@ -135,8 +215,9 @@ class PgVectorProvider(AbstractVectorStoreProvider):
 
     async def delete(self, ids: list[str], *, namespace: str = "default") -> None:
         await self._ensure_table(namespace)
+        table = self._table_name(namespace)
         async with self._engine.begin() as conn:
             await conn.execute(
-                text(f"DELETE FROM vs_{namespace} WHERE id = ANY(:ids)"),
+                text(f"DELETE FROM {table} WHERE id = ANY(:ids)"),
                 {"ids": ids},
             )

@@ -1,12 +1,12 @@
 """Azure AI Search vector store adapter."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
-from azure.core.credentials import AzureKeyCredential
-from azure.search.documents import SearchClient
-from azure.search.documents.indexes import SearchIndexClient
-from azure.search.documents.indexes.models import (
+from azure.core.credentials import AzureKeyCredential  # type: ignore[import-not-found]
+from azure.search.documents import SearchClient  # type: ignore[import-not-found]
+from azure.search.documents.indexes import SearchIndexClient  # type: ignore[import-not-found]
+from azure.search.documents.indexes.models import (  # type: ignore[import-not-found]
     HnswAlgorithmConfiguration,
     SearchField,
     SearchFieldDataType,
@@ -19,9 +19,12 @@ from azure.search.documents.indexes.models import (
     VectorSearchAlgorithmKind,
     VectorSearchProfile,
 )
-from azure.search.documents.models import VectorizedQuery
+from azure.search.documents.models import VectorizedQuery  # type: ignore[import-not-found]
+
+from provider_contracts.errors import ProviderConfigError
 
 from ._base import AbstractVectorStoreProvider, SearchResult, VectorDocument
+from ._filter import build_odata_filter
 
 _DEFAULT_ENDPOINT = "https://YOUR-SEARCH-SERVICE.search.windows.net"
 _DEFAULT_INDEX = "default"
@@ -34,6 +37,8 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
 
         pip install provider-contracts[azure-search]
     """
+
+    supports_any_of_filter: ClassVar[bool] = True
 
     def __init__(
         self,
@@ -152,10 +157,18 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
         self, name: str, vector_size: int, distance: str = "Cosine"
     ) -> None:
         _ = (name, distance)
+        await self.ensure_namespace(name, vector_size)
+
+    async def ensure_namespace(self, namespace: str, vector_size: int) -> None:
+        """Idempotent size check against the single shared index.
+
+        Namespace is ignored (same as upsert/search/delete).
+        """
+        _ = namespace
         if vector_size != self._embedding_dimensions:
-            raise ValueError(
-                f"vector_size {vector_size} does not match configured "
-                f"embedding_dimensions {self._embedding_dimensions}"
+            raise ProviderConfigError(
+                f"Index {self._index_name!r} exists with vector_size "
+                f"{self._embedding_dimensions}, requested {vector_size}"
             )
 
     async def upsert(
@@ -192,16 +205,7 @@ class AzureAISearchVectorStoreProvider(AbstractVectorStoreProvider):
     ) -> list[SearchResult]:
         """Search for similar documents using hybrid search and semantic re-ranking."""
         
-        # Build filter string if provided
-        filter_str = None
-        if filter:
-            filter_parts = []
-            for key, value in filter.items():
-                if isinstance(value, str):
-                    filter_parts.append(f"{key} eq '{value}'")
-                else:
-                    filter_parts.append(f"{key} eq {value}")
-            filter_str = " and ".join(filter_parts)
+        filter_str = build_odata_filter(filter) if filter else None
         
         # Use hybrid search when query text is available
         if query_text:
