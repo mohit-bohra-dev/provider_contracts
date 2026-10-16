@@ -102,6 +102,21 @@ from .tts import AbstractTTSProvider, TTSResult
 from .vad import AbstractVADProvider, VADResult
 from .errors import ProviderConfigError, ProviderError
 from .vector_store import AbstractVectorStoreProvider, SearchResult, VectorDocument
+from .graph_store import (
+    AbstractGraphStore,
+    GraphStoreError,
+    GraphStoreQueryError,
+    GraphStoreUnavailable,
+    named_graph_iri,
+)
+from .credential_broker import (
+    AbstractCredentialBroker,
+    AccessToken,
+    CredentialCheck,
+    CredentialError,
+    Principal,
+    broker_token_source,
+)
 
 __all__ = [
     "__version__",
@@ -161,4 +176,17 @@ __all__ = [
     "AbstractToolsClientProvider",
     "ToolCall",
     "ToolResult",
+    # Graph Store
+    "AbstractGraphStore",
+    "GraphStoreError",
+    "GraphStoreQueryError",
+    "GraphStoreUnavailable",
+    "named_graph_iri",
+    # Credential Broker
+    "AbstractCredentialBroker",
+    "AccessToken",
+    "CredentialCheck",
+    "CredentialError",
+    "Principal",
+    "broker_token_source",
 ]
