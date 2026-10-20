@@ -13,6 +13,7 @@ class MockTelemetryProvider(AbstractTelemetryProvider):
 
     def __init__(self) -> None:
         self.recorded_metrics: list[dict[str, Any]] = []
+        self.recorded_spans: list[dict[str, Any]] = []
         self._span_counter = 0
 
     @asynccontextmanager
@@ -23,11 +24,13 @@ class MockTelemetryProvider(AbstractTelemetryProvider):
         attributes: dict[str, Any] | None = None,
     ) -> AsyncIterator[SpanContext]:
         self._span_counter += 1
+        attrs = attributes or {}
         ctx = SpanContext(
             trace_id=f"mock-trace-{self._span_counter}",
             span_id=f"mock-span-{self._span_counter}",
             name=name,
         )
+        self.recorded_spans.append({"name": name, "attributes": dict(attrs)})
         yield ctx
 
     async def record_metric(
