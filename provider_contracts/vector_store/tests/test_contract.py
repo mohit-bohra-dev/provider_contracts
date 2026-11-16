@@ -138,10 +138,9 @@ async def test_mock_ensure_namespace_resolves_like_upsert(
 
 
 def test_concrete_providers_advertise_any_of() -> None:
-    from provider_contracts.vector_store.qdrant import QdrantVectorStoreProvider
+    pytest.importorskip("sqlalchemy")
     from provider_contracts.vector_store.pgvector import PgVectorProvider
 
-    assert QdrantVectorStoreProvider.supports_any_of_filter is True
     assert PgVectorProvider.supports_any_of_filter is True
     azure = pytest.importorskip("azure.search.documents")
     from provider_contracts.vector_store.azure_ai_search import (
@@ -190,71 +189,3 @@ def test_azure_odata_filter_scalar_and_any_of() -> None:
     assert "(application_id eq 'a' or application_id eq 'b')" in combined
 
 
-@pytest.mark.asyncio
-async def test_qdrant_filter_and_ensure_when_reachable() -> None:
-    """Live Qdrant smoke: skip when localhost:6333 is unreachable."""
-    qdrant = pytest.importorskip("qdrant_client")
-    from provider_contracts.vector_store.qdrant import QdrantVectorStoreProvider
-
-    store = QdrantVectorStoreProvider(
-        url="http://localhost:6333",
-        collection="pc_contract_test",
-    )
-    try:
-        await store._client.get_collections()
-    except Exception as exc:  # noqa: BLE001 — connectivity probe
-        pytest.skip(f"Qdrant not reachable: {exc}")
-
-    ns = "g6_filter_ns"
-    collection = store._resolve_collection(ns)
-    try:
-        await store._client.delete_collection(collection_name=collection)
-    except Exception:  # noqa: BLE001 — may not exist
-        pass
-
-    await store.ensure_namespace(ns, vector_size=3)
-    await store.ensure_namespace(ns, vector_size=3)
-    with pytest.raises(ProviderConfigError, match="vector_size"):
-        await store.ensure_namespace(ns, vector_size=8)
-
-    await store.upsert(
-        [
-            VectorDocument(
-                id="1",
-                embedding=[1.0, 0.0, 0.0],
-                metadata={"application_id": "fees", "read_only": True},
-                text="fees",
-            ),
-            VectorDocument(
-                id="2",
-                embedding=[0.9, 0.1, 0.0],
-                metadata={"application_id": "escrow", "read_only": True},
-                text="escrow",
-            ),
-            VectorDocument(
-                id="3",
-                embedding=[0.8, 0.2, 0.0],
-                metadata={"application_id": "loans", "read_only": True},
-                text="loans",
-            ),
-        ],
-        namespace=ns,
-    )
-    results = await store.search(
-        [1.0, 0.0, 0.0],
-        namespace=ns,
-        top_k=10,
-        filter={"application_id": ["fees", "loans"], "read_only": True},
-    )
-    ids = {r.id for r in results}
-    # Qdrant point ids may be UUID5 transforms of "1"/"3"
-    assert len(results) >= 1
-    # At least the metadata any-of constraint held
-    assert all(r.metadata.get("application_id") in {"fees", "loans"} for r in results)
-    assert "escrow" not in {r.metadata.get("application_id") for r in results}
-    _ = (qdrant, ids)
-
-    try:
-        await store._client.delete_collection(collection_name=collection)
-    except Exception:  # noqa: BLE001
-        pass

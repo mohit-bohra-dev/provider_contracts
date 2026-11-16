@@ -28,6 +28,30 @@ class ToolCallRecord(BaseModel):
     arguments: dict[str, Any] = Field(default_factory=dict)
     result_summary: str = ""
     success: bool = True
+    latency_ms: float = 0.0
+    error: str | None = None
+
+
+class LLMCallRecord(BaseModel):
+    """One LLM chat invocation during a turn."""
+
+    round_idx: int
+    phase: Literal["tool_loop", "validation_retry"] = "tool_loop"
+    model: str | None = None
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    latency_ms: float = 0.0
+    tool_calls_requested: int = 0
+    finish_reason: str | None = None
+
+
+class ValidationAttemptRecord(BaseModel):
+    """One output-validation attempt."""
+
+    attempt: int
+    is_valid: bool
+    retry_feedback: str | None = None
+    latency_ms: float = 0.0
 
 
 class AgentValidatorResult(BaseModel):
@@ -74,6 +98,10 @@ class AgentTurnResult(BaseModel):
     validation_retries_used: int = 0
     interrupted: bool = False
     thread_id: str | None = None
+    token_usage: dict[str, int] = Field(default_factory=dict)
+    llm_calls: list[LLMCallRecord] = Field(default_factory=list)
+    validation_attempts: list[ValidationAttemptRecord] = Field(default_factory=list)
+    model: str | None = None
 
 
 class AgentStreamEvent(BaseModel):

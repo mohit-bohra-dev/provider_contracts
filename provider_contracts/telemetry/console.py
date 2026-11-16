@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import logging
-import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from ._base import AbstractTelemetryProvider, SpanContext
+from ._base import AbstractTelemetryProvider, SpanContext, SpanKind, trace_span
 
 _logger = logging.getLogger("telemetry.console")
 
@@ -32,7 +31,6 @@ class ConsoleTelemetryProvider(AbstractTelemetryProvider):
 
     def __init__(self) -> None:
         self._log: Any = _get_logger()
-        self._span_counter = 0
 
     @asynccontextmanager
     async def span(
@@ -40,20 +38,25 @@ class ConsoleTelemetryProvider(AbstractTelemetryProvider):
         name: str,
         *,
         attributes: dict[str, Any] | None = None,
+        kind: SpanKind | None = None,
     ) -> AsyncIterator[SpanContext]:
-        self._span_counter += 1
-        ctx = SpanContext(
-            trace_id=f"console-{self._span_counter}",
-            span_id=f"span-{self._span_counter}",
-            name=name,
-        )
-        start = time.perf_counter()
-        self._log.info("span.start", span_name=name, **(attributes or {}))
-        try:
-            yield ctx
-        finally:
-            elapsed_ms = (time.perf_counter() - start) * 1000
-            self._log.info("span.end", span_name=name, elapsed_ms=round(elapsed_ms, 2))
+        async with trace_span(name, attributes=attributes, kind=kind) as ctx:
+            self._log.info(
+                "span.start",
+                span_name=name,
+                kind=ctx.kind,
+                parent_span_id=ctx.parent_span_id,
+                **(attributes or {}),
+            )
+            try:
+                yield ctx
+            finally:
+                self._log.info(
+                    "span.end",
+                    span_name=name,
+                    elapsed_ms=ctx.latency_ms,
+                    is_error=ctx.is_error,
+                )
 
     async def record_metric(
         self,

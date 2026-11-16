@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
+import time
 from collections.abc import AsyncIterator, Awaitable, Sequence
 from typing import Any, cast
 
 from provider_contracts.llm import (
     AbstractLLMProvider,
     LLMMessage,
+    LLMResponse,
     ToolCallRequest,
 )
 from provider_contracts.tools_client import AbstractToolsClientProvider, ToolCall
@@ -21,9 +24,38 @@ from ._base import (
     AgentTurnResult,
     AgentValidatorFn,
     AgentValidatorResult,
+    LLMCallRecord,
     ToolCallRecord,
     ToolExecutorFn,
+    ValidationAttemptRecord,
 )
+
+_DISCOVERY_TOOLS = frozenset({"search_sse_apis", "list_sse_apis"})
+_LOAN_NUMBER_RE = re.compile(r"\b\d{5,12}\b")
+_PLANNING_PROSE_RE = re.compile(r"\bI need to\b", re.IGNORECASE)
+_DISCOVERY_INVOKE_NUDGE = (
+    "Discovery complete: you have NOT fetched live data yet. "
+    "Call call_sse_api now with the matching operation_id and loan parameter "
+    "before answering."
+)
+
+
+def _only_discovery_so_far(recorded: Sequence[ToolCallRecord]) -> bool:
+    if not recorded:
+        return False
+    return all(r.name in _DISCOVERY_TOOLS for r in recorded)
+
+
+def _messages_have_loan_number(messages: Sequence[LLMMessage]) -> bool:
+    for msg in messages:
+        content = getattr(msg, "content", None)
+        if isinstance(content, str) and _LOAN_NUMBER_RE.search(content):
+            return True
+    return False
+
+
+def _looks_like_planning_prose(text: str) -> bool:
+    return bool(_PLANNING_PROSE_RE.search(text or ""))
 
 
 async def default_tool_executor(
@@ -31,9 +63,11 @@ async def default_tool_executor(
     tools: AbstractToolsClientProvider,
 ) -> list[ToolCallRecord]:
     async def _one(tc: ToolCallRequest) -> ToolCallRecord:
+        t0 = time.perf_counter()
         result = await tools.call(
             ToolCall(tool_name=tc.name, parameters=dict(tc.arguments))
         )
+        latency_ms = round((time.perf_counter() - t0) * 1000, 2)
         summary = (
             json.dumps(result.data)[:500]
             if result.success
@@ -44,9 +78,28 @@ async def default_tool_executor(
             arguments=dict(tc.arguments),
             result_summary=summary,
             success=result.success,
+            latency_ms=latency_ms,
+            error=None if result.success else (result.error or "error"),
         )
 
     return list(await asyncio.gather(*[_one(tc) for tc in tool_calls]))
+
+
+def _usage_tokens(response: LLMResponse) -> tuple[int, int]:
+    usage = response.usage or {}
+    prompt = int(usage.get("prompt_tokens") or usage.get("prompt") or 0)
+    completion = int(usage.get("completion_tokens") or usage.get("completion") or 0)
+    return prompt, completion
+
+
+def _token_usage_dict(prompt: int, completion: int) -> dict[str, int]:
+    return {
+        "prompt": prompt,
+        "completion": completion,
+        "total": prompt + completion,
+        "prompt_tokens": prompt,
+        "completion_tokens": completion,
+    }
 
 
 async def _maybe_validate(
@@ -78,6 +131,12 @@ async def run_react_loop(
     rounds_used = 0
     validation_retries = 0
     response_content = ""
+    discovery_nudge_used = False
+    llm_calls: list[LLMCallRecord] = []
+    validation_attempts: list[ValidationAttemptRecord] = []
+    prompt_total = 0
+    completion_total = 0
+    last_model: str | None = None
 
     def _emit(ev: AgentStreamEvent) -> None:
         if emit is not None:
@@ -92,6 +151,41 @@ async def run_react_loop(
         for tc in tcs:
             out.extend(await default_tool_executor([tc], tools))
         return out
+
+    async def _chat(
+        *,
+        round_idx: int,
+        phase: str,
+        temperature: float,
+        tools_arg: Any,
+    ) -> LLMResponse:
+        nonlocal prompt_total, completion_total, last_model
+        t0 = time.perf_counter()
+        response = await llm.chat(
+            messages,
+            temperature=temperature,
+            max_tokens=request.max_tokens,
+            json_mode=request.json_mode,
+            tools=tools_arg,
+        )
+        latency_ms = round((time.perf_counter() - t0) * 1000, 2)
+        prompt_tok, completion_tok = _usage_tokens(response)
+        prompt_total += prompt_tok
+        completion_total += completion_tok
+        last_model = response.model or last_model
+        llm_calls.append(
+            LLMCallRecord(
+                round_idx=round_idx,
+                phase=phase,  # type: ignore[arg-type]
+                model=response.model,
+                prompt_tokens=prompt_tok,
+                completion_tokens=completion_tok,
+                latency_ms=latency_ms,
+                tool_calls_requested=len(response.tool_calls or []),
+                finish_reason=None,
+            )
+        )
+        return response
 
     if request.thread_id and "call_model" in request.interrupt_before:
         if checkpoints is not None:
@@ -119,16 +213,36 @@ async def run_react_loop(
         rounds_used = round_idx + 1
         _emit(AgentStreamEvent(type="node_entered", node="call_model", detail=f"round={round_idx}"))
         allow_tools = round_idx < request.max_tool_rounds - 1 and bool(request.tools)
-        response = await llm.chat(
-            messages,
+        response = await _chat(
+            round_idx=round_idx,
+            phase="tool_loop",
             temperature=request.temperature,
-            max_tokens=request.max_tokens,
-            json_mode=request.json_mode,
-            tools=request.tools if allow_tools else None,
+            tools_arg=request.tools if allow_tools else None,
         )
         response_content = response.content or ""
 
         if not response.tool_calls:
+            # Loan query stopped after discovery only — force one invoke round.
+            if (
+                allow_tools
+                and not discovery_nudge_used
+                and _only_discovery_so_far(recorded)
+                and (
+                    _messages_have_loan_number(messages)
+                    or _looks_like_planning_prose(response_content)
+                )
+            ):
+                discovery_nudge_used = True
+                messages.append(
+                    LLMMessage(
+                        role="assistant",
+                        content=response_content or "Discovery finished.",
+                    )
+                )
+                messages.append(
+                    LLMMessage(role="user", content=_DISCOVERY_INVOKE_NUDGE)
+                )
+                continue
             break
 
         _emit(
@@ -153,10 +267,13 @@ async def run_react_loop(
         tool_results_text = "Here are the results from the tools you requested:\n"
         for item in new_tools:
             tool_results_text += f"[{item.name}]: {item.result_summary}\n"
-        tool_results_text += (
-            "\nIf you still need data, call another tool. "
-            "Otherwise respond with the final answer."
-        )
+        if _only_discovery_so_far(recorded):
+            tool_results_text += f"\n{_DISCOVERY_INVOKE_NUDGE}"
+        else:
+            tool_results_text += (
+                "\nIf you still need data, call another tool. "
+                "Otherwise respond with the final answer."
+            )
         messages.append(
             LLMMessage(
                 role="assistant",
@@ -169,16 +286,25 @@ async def run_react_loop(
     for attempt in range(request.max_validation_retries + 1):
         if attempt > 0:
             validation_retries = attempt
-            response = await llm.chat(
-                messages,
+            response = await _chat(
+                round_idx=rounds_used + attempt - 1,
+                phase="validation_retry",
                 temperature=0.1,
-                max_tokens=request.max_tokens,
-                json_mode=request.json_mode,
+                tools_arg=None,
             )
             response_content = response.content or ""
 
         _emit(AgentStreamEvent(type="node_entered", node="validate_output"))
+        v0 = time.perf_counter()
         result = await _maybe_validate(validator, response_content, recorded)
+        validation_attempts.append(
+            ValidationAttemptRecord(
+                attempt=attempt,
+                is_valid=result.is_valid,
+                retry_feedback=result.retry_feedback,
+                latency_ms=round((time.perf_counter() - v0) * 1000, 2),
+            )
+        )
         if result.is_valid:
             parsed = result.parsed_output
             break
@@ -226,6 +352,10 @@ async def run_react_loop(
         rounds_used=rounds_used,
         validation_retries_used=validation_retries,
         thread_id=request.thread_id,
+        token_usage=_token_usage_dict(prompt_total, completion_total),
+        llm_calls=llm_calls,
+        validation_attempts=validation_attempts,
+        model=last_model,
     )
 
 

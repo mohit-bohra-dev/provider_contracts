@@ -71,6 +71,13 @@ Public API (ABCs + DTOs only):
     ─────────
     from provider_contracts.telemetry import AbstractTelemetryProvider, SpanContext
 
+    Eval Store
+    ──────────
+    from provider_contracts.eval_store import (
+        AbstractEvalStoreProvider, DatasetItem, RunHandle, ScoreRecord,
+        TraceRecord, ReviewLabel,
+    )
+
     Tools Client
     ────────────
     from provider_contracts.tools_client import (
@@ -97,6 +104,14 @@ from .secrets import AbstractSecretsProvider
 from .storage import AbstractStorageProvider, StoredFile
 from .stt import AbstractSTTProvider, STTResult
 from .telemetry import AbstractTelemetryProvider, SpanContext
+from .eval_store import (
+    AbstractEvalStoreProvider,
+    DatasetItem,
+    ReviewLabel,
+    RunHandle,
+    ScoreRecord,
+    TraceRecord,
+)
 from .tools_client import AbstractToolsClientProvider, ToolCall, ToolResult
 from .tts import AbstractTTSProvider, TTSResult
 from .vad import AbstractVADProvider, VADResult
@@ -172,6 +187,13 @@ __all__ = [
     # Telemetry
     "AbstractTelemetryProvider",
     "SpanContext",
+    # Eval Store
+    "AbstractEvalStoreProvider",
+    "DatasetItem",
+    "ReviewLabel",
+    "RunHandle",
+    "ScoreRecord",
+    "TraceRecord",
     # Tools Client
     "AbstractToolsClientProvider",
     "ToolCall",

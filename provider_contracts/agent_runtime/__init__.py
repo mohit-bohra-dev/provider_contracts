@@ -8,9 +8,11 @@ from ._base import (
     AgentTurnResult,
     AgentValidatorFn,
     AgentValidatorResult,
+    LLMCallRecord,
     RuntimeCapabilities,
     ToolCallRecord,
     ToolExecutorFn,
+    ValidationAttemptRecord,
 )
 from .mock import MockAgentRuntimeProvider
 from .native import NativeLoopAgentRuntimeProvider
@@ -23,11 +25,13 @@ __all__ = [
     "AgentTurnResult",
     "AgentValidatorFn",
     "AgentValidatorResult",
+    "LLMCallRecord",
     "MockAgentRuntimeProvider",
     "NativeLoopAgentRuntimeProvider",
     "RuntimeCapabilities",
     "ToolCallRecord",
     "ToolExecutorFn",
+    "ValidationAttemptRecord",
 ]
 
 

@@ -5,16 +5,15 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from ._base import AbstractTelemetryProvider, SpanContext
+from ._base import AbstractTelemetryProvider, SpanContext, SpanKind, trace_span
 
 
 class MockTelemetryProvider(AbstractTelemetryProvider):
-    """No-op spans + records metrics into ``recorded_metrics`` for assertions."""
+    """Buffered spans + records metrics into ``recorded_metrics`` for assertions."""
 
     def __init__(self) -> None:
         self.recorded_metrics: list[dict[str, Any]] = []
         self.recorded_spans: list[dict[str, Any]] = []
-        self._span_counter = 0
 
     @asynccontextmanager
     async def span(
@@ -22,16 +21,21 @@ class MockTelemetryProvider(AbstractTelemetryProvider):
         name: str,
         *,
         attributes: dict[str, Any] | None = None,
+        kind: SpanKind | None = None,
     ) -> AsyncIterator[SpanContext]:
-        self._span_counter += 1
         attrs = attributes or {}
-        ctx = SpanContext(
-            trace_id=f"mock-trace-{self._span_counter}",
-            span_id=f"mock-span-{self._span_counter}",
-            name=name,
-        )
-        self.recorded_spans.append({"name": name, "attributes": dict(attrs)})
-        yield ctx
+        async with trace_span(name, attributes=attrs, kind=kind) as ctx:
+            self.recorded_spans.append(
+                {
+                    "name": name,
+                    "attributes": dict(attrs),
+                    "kind": ctx.kind,
+                    "trace_id": ctx.trace_id,
+                    "span_id": ctx.span_id,
+                    "parent_span_id": ctx.parent_span_id,
+                }
+            )
+            yield ctx
 
     async def record_metric(
         self,

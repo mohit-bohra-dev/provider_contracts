@@ -131,6 +131,110 @@ async def test_interrupt_and_resume() -> None:
     assert resumed.raw_text
 
 
+class _DiscoveryThenStopLLM(MockLLMProvider):
+    """Round 1: search; round 2: stop (planning); after nudge: invoke; then answer."""
+
+    def __init__(self) -> None:
+        self._n = 0
+        self.saw_discovery_nudge = False
+        self._invoked = False
+
+    async def chat(self, messages, *, temperature=0.7, max_tokens=2048, json_mode=False, tools=None):  # type: ignore[no-untyped-def]
+        from provider_contracts.llm import LLMResponse
+
+        self._n += 1
+        blob = "\n".join(str(getattr(m, "content", "") or "") for m in messages)
+        if "have NOT fetched live data yet" in blob:
+            self.saw_discovery_nudge = True
+
+        if tools and not self.saw_discovery_nudge and self._n == 1:
+            return LLMResponse(
+                content="",
+                model="scripted",
+                tool_calls=[
+                    ToolCallRequest(
+                        name="search_sse_apis",
+                        arguments={"query": "escrow loan"},
+                    ),
+                ],
+            )
+        if tools and not self.saw_discovery_nudge:
+            return LLMResponse(
+                content="I need to search the documentation for escrow changes.",
+                model="scripted",
+            )
+        if tools and self.saw_discovery_nudge and not self._invoked:
+            self._invoked = True
+            return LLMResponse(
+                content="",
+                model="scripted",
+                tool_calls=[
+                    ToolCallRequest(
+                        name="call_sse_api",
+                        arguments={
+                            "operation_id": "escrow:GetEscrowByLoanNumber",
+                            "query": {"loanNumber": "1000002245"},
+                        },
+                    ),
+                ],
+            )
+        return LLMResponse(
+            content=json.dumps({"answer": "escrow details", "confidence": 0.9}),
+            model="scripted",
+        )
+
+
+@pytest.mark.asyncio
+async def test_discovery_nudge_forces_call_sse_api() -> None:
+    """Loan query that stops after search_sse_apis must be nudged to call_sse_api."""
+    rt = NativeLoopAgentRuntimeProvider()
+    llm = _DiscoveryThenStopLLM()
+    tools = MockToolsClientProvider(
+        {
+            "search_sse_apis": ToolResult(
+                tool_name="search_sse_apis",
+                success=True,
+                data={
+                    "text": (
+                        "OpenAPI operations:\n"
+                        "- id: escrow:GetEscrowByLoanNumber"
+                    )
+                },
+            ),
+            "call_sse_api": ToolResult(
+                tool_name="call_sse_api",
+                success=True,
+                data={"text": '{"monthlyEscrow": 615.30}'},
+            ),
+        }
+    )
+
+    result = await rt.run(
+        AgentTurnRequest(
+            messages=[
+                LLMMessage(
+                    role="user",
+                    content="Why did escrow jump on loan 1000002245?",
+                )
+            ],
+            tools=[
+                ToolDefinition(name="search_sse_apis", description="s", parameters={}),
+                ToolDefinition(name="call_sse_api", description="c", parameters={}),
+            ],
+            max_tool_rounds=4,
+            max_validation_retries=0,
+            parallel_tool_calls=True,
+        ),
+        llm=llm,
+        tools=tools,
+    )
+
+    names = [r.name for r in result.tool_calls]
+    assert "search_sse_apis" in names
+    assert "call_sse_api" in names
+    assert llm.saw_discovery_nudge is True
+
+
 @pytest.mark.asyncio
 async def test_langgraph_runtime_if_installed() -> None:
     pytest.importorskip("langgraph")
